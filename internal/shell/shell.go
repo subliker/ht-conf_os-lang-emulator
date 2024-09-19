@@ -31,7 +31,26 @@ func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
 	sh := newShell(sf)
 
 	sh.o.Clear()
-	sh.o.WriteInputPrompt(sh.curPath)
-	sh.i.ReadAndParseCmnd()
+
+	for {
+		sh.o.WriteInputPrompt(sh.curPath)
+		cmnd, err := sh.i.ReadAndParseCmnd()
+		if err != nil {
+			sh.o.WriteString("Error reading command: " + err.Error())
+			continue
+		}
+
+		if len(cmnd) == 0 {
+			continue
+		}
+
+		if cmnd[0] == "exit" {
+			sh.o.WriteString("\033[36mGoodbye! Comeback soon!\033[0m")
+			break
+		} else {
+			sh.o.WriteString("Command " + cmnd[0] + " wasn't found")
+		}
+	}
+
 	return nil
 }

@@ -1,6 +1,8 @@
 package input
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	ErrIncorrectCmnd = errors.New("incorrect command")
@@ -25,7 +27,9 @@ func parseCmnd(s string) ([]string, error) {
 				continue
 			}
 		}
-		w += string(b)
+		if b != '\n' && b != '\r' {
+			w += string(b)
+		}
 	}
 
 	if m['\''] || m['"'] || m['`'] {

@@ -41,6 +41,7 @@ func (output) Clear() {
 
 func (o output) WriteString(s string) {
 	o.w.WriteString(s)
+	o.w.Flush()
 }
 
 func (o output) WriteInputPrompt(curPath string) {
