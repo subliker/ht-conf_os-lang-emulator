@@ -6,24 +6,24 @@ import (
 )
 
 type (
-	Reader interface {
+	CLIInput interface {
 		ReadAndParseCmnd() ([]string, error)
 	}
 
-	bufioReader struct {
-		s *bufio.Reader
+	input struct {
+		r *bufio.Reader
 	}
 )
 
-func NewInput() Reader {
+func NewCLIInput() CLIInput {
 	reader := bufio.NewReader(os.Stdin)
-	br := bufioReader{reader}
+	i := input{reader}
 
-	return Reader(br)
+	return CLIInput(i)
 }
 
-func (br bufioReader) ReadAndParseCmnd() ([]string, error) {
-	t, err := br.s.ReadString('\n')
+func (i input) ReadAndParseCmnd() ([]string, error) {
+	t, err := i.r.ReadString('\n')
 	if err != nil {
 		return nil, err
 	}
