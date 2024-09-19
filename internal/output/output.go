@@ -9,14 +9,16 @@ import (
 type (
 	CLIOutput interface {
 		Clear()
+		WriteInputPrompt(string)
+		WriteString(string)
 	}
 	output struct {
 		w  *bufio.Writer
 		ip InputPromptData
 	}
 	InputPromptData struct {
-		username string
-		pcName   string
+		Username string
+		PcName   string
 	}
 )
 
@@ -28,7 +30,13 @@ func NewCLIOutput(sd InputPromptData) CLIOutput {
 }
 
 func (output) Clear() {
-	exec.Command("clear")
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+
+	cmd = exec.Command("cmd", "/c", "cls")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }
 
 func (o output) WriteString(s string) {
@@ -40,5 +48,6 @@ func (o output) WriteInputPrompt(curPath string) {
 		{username} at {pcName} in {curPath}
 		$
 	*/
-	o.w.WriteString("/n" + o.ip.username + " at " + o.ip.pcName + " in " + curPath + "\n$")
+	o.w.WriteString("\n\033[32m" + o.ip.Username + "\033[0m at \033[35m" + o.ip.PcName + "\033[0m in \033[33m" + curPath + "\033[0m\n$ ")
+	o.w.Flush()
 }
