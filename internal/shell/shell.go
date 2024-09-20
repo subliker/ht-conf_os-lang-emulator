@@ -6,6 +6,7 @@ import (
 
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/input"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/output"
+	"github.com/subliker/ht-conf_os-lang-emulator/internal/whoami"
 	"github.com/urfave/cli/v3"
 )
 
@@ -88,11 +89,12 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 
 	switch pcmnd[0] {
 	case "exit":
-		sh.o.WriteString("\033[36mGoodbye! Comeback soon!\033[0m")
-		sh.init = false
-		return nil
+		sh.Exit()
+	case "whoami":
+		whoami.Whoami(sh.sf.Username, sh.o.WriteString)
 	default:
 		sh.o.WriteString("Command " + pcmnd[0] + " wasn't found")
-		return nil
 	}
+
+	return nil
 }
