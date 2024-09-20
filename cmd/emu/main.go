@@ -9,9 +9,6 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-type flags struct {
-}
-
 func main() {
 	sf := shell.ShellFlags{}
 
@@ -33,7 +30,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:        "apath",
-				Value:       "fs",
+				Value:       "fs.zip",
 				Usage:       "path to the archive of the virtual file system",
 				Destination: &sf.APath,
 			},

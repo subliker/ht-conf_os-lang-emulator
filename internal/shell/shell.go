@@ -11,11 +11,11 @@ import (
 
 type (
 	sh struct {
-		i       input.CLIInput
-		o       output.CLIOutput
-		curPath string
-		sf      ShellFlags
-		init    bool
+		i    input.CLIInput
+		o    output.CLIOutput
+		sf   ShellFlags
+		fs   fileSystem
+		init bool
 	}
 	ShellFlags struct {
 		Username  string
@@ -30,7 +30,18 @@ var (
 )
 
 func newShell(sf ShellFlags) sh {
-	return sh{input.NewCLIInput(), output.NewCLIOutput(output.InputPromptData{Username: sf.Username, PcName: sf.PcName}), "/", sf, true}
+	fs, err := newFS(sf.APath)
+	if err != nil {
+		panic("error creating filesystem: " + err.Error())
+	}
+
+	return sh{
+		i:    input.NewCLIInput(),
+		o:    output.NewCLIOutput(output.InputPromptData{Username: sf.Username, PcName: sf.PcName}),
+		sf:   sf,
+		fs:   fs,
+		init: true,
+	}
 }
 
 func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
@@ -45,7 +56,7 @@ func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
 	}
 
 	for sh.init {
-		sh.o.WriteInputPrompt(sh.curPath)
+		sh.o.WriteInputPrompt(sh.fs.GetCurPathString())
 		cmnd, err := sh.i.ReadCmnd()
 		if err != nil {
 			sh.o.WriteString("Error reading command: " + err.Error())

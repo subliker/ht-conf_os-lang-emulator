@@ -29,7 +29,7 @@ func NewCLIOutput(sd InputPromptData) CLIOutput {
 	return CLIOutput(o)
 }
 
-func (output) Clear() {
+func (o output) Clear() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
