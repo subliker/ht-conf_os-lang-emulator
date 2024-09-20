@@ -2,6 +2,7 @@ package shell
 
 import (
 	"context"
+	"errors"
 
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/input"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/output"
@@ -14,6 +15,7 @@ type (
 		o       output.CLIOutput
 		curPath string
 		sf      ShellFlags
+		init    bool
 	}
 	ShellFlags struct {
 		Username  string
@@ -23,8 +25,12 @@ type (
 	}
 )
 
+var (
+	ErrShellIsNotInit = errors.New("shell wasn't initialized")
+)
+
 func newShell(sf ShellFlags) sh {
-	return sh{input.NewCLIInput(), output.NewCLIOutput(output.InputPromptData{Username: sf.Username, PcName: sf.PcName}), "/", sf}
+	return sh{input.NewCLIInput(), output.NewCLIOutput(output.InputPromptData{Username: sf.Username, PcName: sf.PcName}), "/", sf, true}
 }
 
 func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
@@ -32,25 +38,50 @@ func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
 
 	sh.o.Clear()
 
-	for {
+	if sh.sf.StartPath != "" {
+		if err := sh.RunScriptFile(sh.sf.StartPath); err != nil {
+			print(err.Error())
+		}
+	}
+
+	for sh.init {
 		sh.o.WriteInputPrompt(sh.curPath)
-		cmnd, err := sh.i.ReadAndParseCmnd()
+		cmnd, err := sh.i.ReadCmnd()
 		if err != nil {
 			sh.o.WriteString("Error reading command: " + err.Error())
 			continue
 		}
 
-		if len(cmnd) == 0 {
+		if err := sh.RunStringCmnd(cmnd); err != nil {
 			continue
 		}
 
-		if cmnd[0] == "exit" {
-			sh.o.WriteString("\033[36mGoodbye! Comeback soon!\033[0m")
-			break
-		} else {
-			sh.o.WriteString("Command " + cmnd[0] + " wasn't found")
-		}
 	}
 
 	return nil
+}
+
+func (sh *sh) RunStringCmnd(cmnd string) error {
+	if !sh.init {
+		return ErrShellIsNotInit
+	}
+
+	pcmnd, err := input.ParseCmnd(cmnd)
+	if err != nil {
+		return err
+	}
+
+	if len(cmnd) == 0 {
+		return nil
+	}
+
+	switch pcmnd[0] {
+	case "exit":
+		sh.o.WriteString("\033[36mGoodbye! Comeback soon!\033[0m")
+		sh.init = false
+		return nil
+	default:
+		sh.o.WriteString("Command " + pcmnd[0] + " wasn't found")
+		return nil
+	}
 }

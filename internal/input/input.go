@@ -7,7 +7,7 @@ import (
 
 type (
 	CLIInput interface {
-		ReadAndParseCmnd() ([]string, error)
+		ReadCmnd() (string, error)
 	}
 
 	input struct {
@@ -22,11 +22,11 @@ func NewCLIInput() CLIInput {
 	return CLIInput(i)
 }
 
-func (i input) ReadAndParseCmnd() ([]string, error) {
+func (i input) ReadCmnd() (string, error) {
 	t, err := i.r.ReadString('\n')
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return parseCmnd(t)
+	return t, nil
 }

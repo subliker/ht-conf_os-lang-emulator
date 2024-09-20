@@ -8,7 +8,7 @@ var (
 	ErrIncorrectCmnd = errors.New("incorrect command")
 )
 
-func parseCmnd(s string) ([]string, error) {
+func ParseCmnd(s string) ([]string, error) {
 	m := map[rune]bool{
 		'\'': false,
 		'"':  false,
