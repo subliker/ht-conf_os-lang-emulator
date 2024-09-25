@@ -16,6 +16,7 @@ type (
 		WriteFile(name string, rw bool, data string) error
 		ReadFile(name string) (string, error)
 		ChangeDirectory(name string) error
+		List(write func(string)) error
 		WriteZip() error
 		Clear()
 	}
@@ -134,6 +135,21 @@ func (fs *fileSystem) ChangeDirectory(path string) error {
 		return err
 	}
 	fs.curPath = filepath.Join(fs.curPath, path)
+	return nil
+}
+
+func (fs *fileSystem) List(write func(string)) error {
+	files, err := os.ReadDir(fs.path(fs.curPath))
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+		write(f.Name())
+	}
 	return nil
 }
 

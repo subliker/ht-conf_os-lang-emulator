@@ -3,6 +3,9 @@ package shell
 import (
 	"context"
 	"errors"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/echo"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/fs"
@@ -58,6 +61,15 @@ func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
 		}
 	}
 
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-sigs
+		sh.Exit()
+		os.Exit(0)
+	}()
+
 	for sh.init {
 		sh.o.WriteInputPrompt(sh.fs.CurPath())
 		cmnd, err := sh.i.ReadCmnd()
@@ -104,6 +116,8 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 		if err := sh.fs.ChangeDirectory(pcmnd[1]); err != nil {
 			sh.o.WriteString(err.Error())
 		}
+	case "ls":
+		sh.fs.List(sh.o.WriteString)
 	default:
 		sh.o.WriteString("Command " + pcmnd[0] + " wasn't found")
 	}
