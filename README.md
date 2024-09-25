@@ -18,3 +18,23 @@ as the following commands:
 
 All emulator functions must be covered by tests, and
 2 tests must be written for each of the supported commands.
+
+### Requirements
+![golang](https://badgen.net/static/go/1.22.2/green?icon=github)<br/>
+You can install Golang <a href="https://go.dev/doc/install">there</a>
+
+### Run
+1. Clone repository
+2. In main directory
+    ```
+    go build -o bin/emu.exe cmd/emu/main.go
+    
+    //for windows
+    ./bin/emu.exe
+
+    //for linux
+    ./bin/emu
+    ```
+
+### Help
+Run  ```emu --help``` to get flags information
