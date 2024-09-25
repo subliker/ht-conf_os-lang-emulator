@@ -31,6 +31,7 @@ func (sh *sh) RunScriptFile(fpath string) error {
 			sh.o.WriteString("Script error! " + err.Error())
 			return ErrDuringScript
 		}
+		sh.o.WriteString("\n")
 	}
 
 	return nil

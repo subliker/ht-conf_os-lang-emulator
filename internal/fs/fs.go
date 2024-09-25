@@ -10,6 +10,7 @@ import (
 )
 
 type (
+	// go:generate go run https://github.com/vektra/mockery/v2@v2.46.0 --name = FileSystem
 	FileSystem interface {
 		CurPath() string
 		WriteFile(name string, rw bool, data string) error
@@ -91,7 +92,6 @@ func (fs *fileSystem) WriteFile(name string, rw bool, data string) error {
 	if _, err := f.WriteString(data); err != nil {
 		return err
 	}
-	print(fs.path(filepath.Join(fs.curPath, name)))
 	return nil
 }
 

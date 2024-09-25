@@ -1,10 +1,19 @@
 package echo
 
-import "github.com/subliker/ht-conf_os-lang-emulator/internal/fs"
+import (
+	"errors"
 
-func Run(pcmnd []string, write func(string), fs fs.FileSystem) {
+	"github.com/subliker/ht-conf_os-lang-emulator/internal/fs"
+)
+
+var (
+	ErrNotEnoughArgs = errors.New("arguments count less 2")
+	ErrWritingFile   = errors.New("error writing file")
+)
+
+func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
 	if len(pcmnd) <= 1 {
-		return
+		return ErrNotEnoughArgs
 	}
 
 	outf := ""
@@ -15,8 +24,13 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) {
 		rw = pcmnd[len(pcmnd)-2] == ">"
 		pcmnd = pcmnd[:len(pcmnd)-2]
 	} else if len(pcmnd[len(pcmnd)-1]) > 1 && (pcmnd[len(pcmnd)-1][0] == '>' || string(pcmnd[len(pcmnd)-1][0])+string(pcmnd[len(pcmnd)-1][1]) == ">>") {
-		outf = pcmnd[len(pcmnd)-1][1:]
-		rw = pcmnd[len(pcmnd)-1][0] == '>'
+		outf = ""
+		rw = pcmnd[len(pcmnd)-1][:2] != ">>"
+		if rw {
+			outf = pcmnd[len(pcmnd)-1][1:]
+		} else {
+			outf = pcmnd[len(pcmnd)-1][2:]
+		}
 		pcmnd = pcmnd[:len(pcmnd)-1]
 	}
 
@@ -34,11 +48,12 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) {
 
 	if outf == "" {
 		write(str)
-		return
+		return nil
 	}
 
 	if err := fs.WriteFile(outf, rw, str); err != nil {
 		write("Error writing to file(" + outf + "): " + err.Error())
-		return
+		return ErrWritingFile
 	}
+	return nil
 }
