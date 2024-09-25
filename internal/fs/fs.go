@@ -2,7 +2,6 @@ package fs
 
 import (
 	"archive/zip"
-	"bufio"
 	"errors"
 	"os"
 	"path/filepath"
@@ -14,7 +13,7 @@ type (
 	FileSystem interface {
 		CurPath() string
 		WriteFile(name string, rw bool, data string) error
-		ReadFile(name string) (string, error)
+		OpenFile(name string) (*os.File, error)
 		ChangeDirectory(name string) error
 		List(write func(string)) error
 		WriteZip() error
@@ -92,28 +91,21 @@ func (fs *fileSystem) WriteFile(name string, rw bool, data string) error {
 	if _, err := f.WriteString(data); err != nil {
 		return err
 	}
+	print(fs.path(filepath.Join(fs.curPath, name)))
 	return nil
 }
 
-func (fs *fileSystem) ReadFile(name string) (string, error) {
+func (fs *fileSystem) OpenFile(name string) (*os.File, error) {
 	if !fs.init {
-		return "", ErrFSNotInit
+		return nil, ErrFSNotInit
 	}
 
 	f, err := os.Open(fs.path(filepath.Join(fs.curPath, name)))
 	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	t := ""
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		t += scanner.Text()
+		return nil, err
 	}
 
-	return t, nil
+	return f, nil
 }
 
 func (fs *fileSystem) ChangeDirectory(path string) error {
@@ -148,7 +140,7 @@ func (fs *fileSystem) List(write func(string)) error {
 		if f.IsDir() {
 			continue
 		}
-		write(f.Name())
+		write(f.Name() + "\n")
 	}
 	return nil
 }

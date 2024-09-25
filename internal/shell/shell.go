@@ -11,6 +11,7 @@ import (
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/fs"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/input"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/output"
+	"github.com/subliker/ht-conf_os-lang-emulator/internal/uniq"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/whoami"
 	"github.com/urfave/cli/v3"
 )
@@ -118,6 +119,8 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 		}
 	case "ls":
 		sh.fs.List(sh.o.WriteString)
+	case "uniq":
+		uniq.Run(pcmnd, sh.o.WriteString, sh.fs)
 	default:
 		sh.o.WriteString("Command " + pcmnd[0] + " wasn't found")
 	}
