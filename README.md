@@ -36,5 +36,11 @@ You can install Golang <a href="https://go.dev/doc/install">there</a>
     ./bin/emu
     ```
 
+### Tests
+Run all tests
+```
+go test -v ./...
+```
+
 ### Help
 Run  ```emu --help``` to get flags information
