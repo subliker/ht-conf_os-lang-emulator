@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/subliker/ht-conf_os-lang-emulator/internal/echo"
+	"github.com/subliker/ht-conf_os-lang-emulator/internal/fs"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/input"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/output"
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/whoami"
@@ -15,7 +17,7 @@ type (
 		i    input.CLIInput
 		o    output.CLIOutput
 		sf   ShellFlags
-		fs   fileSystem
+		fs   fs.FileSystem
 		init bool
 	}
 	ShellFlags struct {
@@ -31,7 +33,7 @@ var (
 )
 
 func newShell(sf ShellFlags) sh {
-	fs, err := newFS(sf.APath)
+	fs, err := fs.NewFS(sf.APath)
 	if err != nil {
 		panic("error creating filesystem: " + err.Error())
 	}
@@ -57,7 +59,7 @@ func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
 	}
 
 	for sh.init {
-		sh.o.WriteInputPrompt(sh.fs.GetCurPathString())
+		sh.o.WriteInputPrompt(sh.fs.CurPath())
 		cmnd, err := sh.i.ReadCmnd()
 		if err != nil {
 			sh.o.WriteString("Error reading command: " + err.Error())
@@ -91,7 +93,17 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 	case "exit":
 		sh.Exit()
 	case "whoami":
-		whoami.Whoami(sh.sf.Username, sh.o.WriteString)
+		whoami.Run(sh.sf.Username, sh.o.WriteString)
+	case "echo":
+		echo.Run(pcmnd, sh.o.WriteString, sh.fs)
+	case "cd":
+		if len(pcmnd) != 2 {
+			sh.o.WriteString("incorrect cd command")
+			break
+		}
+		if err := sh.fs.ChangeDirectory(pcmnd[1]); err != nil {
+			sh.o.WriteString(err.Error())
+		}
 	default:
 		sh.o.WriteString("Command " + pcmnd[0] + " wasn't found")
 	}
