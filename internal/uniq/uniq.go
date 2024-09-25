@@ -2,15 +2,21 @@ package uniq
 
 import (
 	"bufio"
+	"errors"
 	"strconv"
 
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/fs"
 )
 
-func Run(pcmnd []string, write func(string), fs fs.FileSystem) {
+var (
+	ErrIncorrectSyntax = errors.New("arguments count less 2")
+	ErrOpenFile        = errors.New("error opening file")
+)
+
+func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
 	if len(pcmnd) <= 1 {
 		write("incorrect syntax of command uniq")
-		return
+		return ErrIncorrectSyntax
 	}
 
 	ctr := pcmnd[1] == "-c"
@@ -18,7 +24,7 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) {
 	if ctr {
 		if len(pcmnd) < 3 {
 			write("filepath is not set")
-			return
+			return ErrIncorrectSyntax
 		}
 		fpath = pcmnd[2]
 	} else {
@@ -28,15 +34,14 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) {
 	f, err := fs.OpenFile(fpath)
 	if err != nil {
 		write("error opening file " + fpath)
-		return
+		return ErrOpenFile
 	}
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
 
 	if !scanner.Scan() {
-		print(111)
-		return
+		return nil
 	}
 	s := scanner.Text()
 	c := 1
@@ -57,4 +62,5 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) {
 		write(strconv.Itoa(c) + " ")
 	}
 	write(s + "\n")
+	return nil
 }

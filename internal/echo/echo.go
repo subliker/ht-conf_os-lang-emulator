@@ -8,7 +8,7 @@ import (
 
 var (
 	ErrNotEnoughArgs = errors.New("arguments count less 2")
-	ErrWritingFile   = errors.New("error writing file")
+	ErrWriteFile     = errors.New("error writing file")
 )
 
 func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
@@ -53,7 +53,7 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
 
 	if err := fs.WriteFile(outf, rw, str); err != nil {
 		write("Error writing to file(" + outf + "): " + err.Error())
-		return ErrWritingFile
+		return ErrWriteFile
 	}
 	return nil
 }

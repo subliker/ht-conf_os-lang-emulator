@@ -95,7 +95,7 @@ func TestEchoWithWriteError(t *testing.T) {
 	pcmnd := []string{"echo", "Hello", "World!", ">", "a/a.txt"}
 	write := func(s string) { out += s }
 
-	assert.ErrorIs(Run(pcmnd, write, fsmock), ErrWritingFile)
+	assert.ErrorIs(Run(pcmnd, write, fsmock), ErrWriteFile)
 	assert.Equal(out, "Error writing to file(a/a.txt): "+wrErr.Error())
 	fsmock.AssertCalled(t, "WriteFile", "a/a.txt", true, "Hello World!")
 }
