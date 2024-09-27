@@ -61,6 +61,6 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
 	if ctr {
 		write(strconv.Itoa(c) + " ")
 	}
-	write(s + "\n")
+	write(s)
 	return nil
 }
