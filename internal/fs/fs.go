@@ -143,19 +143,27 @@ func (fs *fileSystem) List(write func(string), more bool) error {
 	}
 
 	for _, f := range files {
+		s := ""
+		n := f.Name()
 		if f.IsDir() {
-			continue
+			n = "\033[34m" + n + "\033[0m"
 		}
 		if more {
 			i, err := os.Stat(filepath.Join(fs.path(fs.curPath), f.Name()))
 			if err != nil {
-				write(f.Name())
-				continue
+				s = n
+			} else {
+				if f.IsDir() {
+					s += "d "
+				} else {
+					s += "- "
+				}
+				s += strconv.FormatInt(i.Size(), 10) + " " + i.ModTime().Format(time.RFC822) + " " + n + "\n"
 			}
-			write(strconv.FormatInt(i.Size(), 10) + " " + i.ModTime().Format(time.RFC822) + " " + f.Name() + "\n")
 		} else {
-			write(f.Name() + "\n")
+			s += n + "\n"
 		}
+		write(s)
 	}
 	return nil
 }
