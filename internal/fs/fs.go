@@ -5,6 +5,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/artdarek/go-unzip"
 )
@@ -16,7 +18,7 @@ type (
 		WriteFile(name string, rw bool, data string) error
 		OpenFile(name string) (*os.File, error)
 		ChangeDirectory(name string) error
-		List(write func(string)) error
+		List(write func(string), more bool) error
 		WriteZip() error
 		Clear()
 	}
@@ -130,7 +132,11 @@ func (fs *fileSystem) ChangeDirectory(path string) error {
 	return nil
 }
 
-func (fs *fileSystem) List(write func(string)) error {
+func (fs *fileSystem) List(write func(string), more bool) error {
+	if !fs.init {
+		return ErrFSNotInit
+	}
+
 	files, err := os.ReadDir(fs.path(fs.curPath))
 	if err != nil {
 		return err
@@ -140,7 +146,16 @@ func (fs *fileSystem) List(write func(string)) error {
 		if f.IsDir() {
 			continue
 		}
-		write(f.Name() + "\n")
+		if more {
+			i, err := os.Stat(filepath.Join(fs.path(fs.curPath), f.Name()))
+			if err != nil {
+				write(f.Name())
+				continue
+			}
+			write(strconv.FormatInt(i.Size(), 10) + " " + i.ModTime().Format(time.RFC822) + " " + f.Name() + "\n")
+		} else {
+			write(f.Name() + "\n")
+		}
 	}
 	return nil
 }

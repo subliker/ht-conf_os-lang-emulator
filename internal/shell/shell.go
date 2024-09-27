@@ -118,7 +118,7 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 			sh.o.WriteString(err.Error())
 		}
 	case "ls":
-		sh.fs.List(sh.o.WriteString)
+		sh.fs.List(sh.o.WriteString, len(pcmnd) > 1 && pcmnd[1] == "-l")
 	case "uniq":
 		uniq.Run(pcmnd, sh.o.WriteString, sh.fs)
 	default:

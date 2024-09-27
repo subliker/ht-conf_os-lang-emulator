@@ -54,17 +54,17 @@ func (_m *FileSystem) CurPath() string {
 	return r0
 }
 
-// List provides a mock function with given fields: write
-func (_m *FileSystem) List(write func(string)) error {
-	ret := _m.Called(write)
+// List provides a mock function with given fields: write, more
+func (_m *FileSystem) List(write func(string), more bool) error {
+	ret := _m.Called(write, more)
 
 	if len(ret) == 0 {
 		panic("no return value specified for List")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(func(string)) error); ok {
-		r0 = rf(write)
+	if rf, ok := ret.Get(0).(func(func(string), bool) error); ok {
+		r0 = rf(write, more)
 	} else {
 		r0 = ret.Error(0)
 	}
