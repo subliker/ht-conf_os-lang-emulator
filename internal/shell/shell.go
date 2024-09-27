@@ -80,6 +80,7 @@ func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
 		}
 
 		if err := sh.RunStringCmnd(cmnd); err != nil {
+			sh.o.WriteString("Error parsing command: " + err.Error())
 			continue
 		}
 
