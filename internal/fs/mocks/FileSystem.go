@@ -72,6 +72,24 @@ func (_m *FileSystem) List(write func(string), more bool) error {
 	return r0
 }
 
+// MakeDirectory provides a mock function with given fields: name
+func (_m *FileSystem) MakeDirectory(name string) error {
+	ret := _m.Called(name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MakeDirectory")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(string) error); ok {
+		r0 = rf(name)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // OpenFile provides a mock function with given fields: name
 func (_m *FileSystem) OpenFile(name string) (*os.File, error) {
 	ret := _m.Called(name)

@@ -17,6 +17,7 @@ type (
 		CurPath() string
 		WriteFile(name string, rw bool, data string) error
 		OpenFile(name string) (*os.File, error)
+		MakeDirectory(name string) error
 		ChangeDirectory(name string) error
 		List(write func(string), more bool) error
 		WriteZip() error
@@ -110,12 +111,38 @@ func (fs *fileSystem) OpenFile(name string) (*os.File, error) {
 	return f, nil
 }
 
+func (fs *fileSystem) MakeDirectory(name string) error {
+	if !fs.init {
+		return ErrFSNotInit
+	}
+
+	return os.Mkdir(filepath.Join(fs.path(fs.curPath), name), os.ModePerm)
+}
+
 func (fs *fileSystem) ChangeDirectory(path string) error {
 	if !fs.init {
 		return ErrFSNotInit
 	}
 
-	ap, err := filepath.Abs(filepath.Join(fs.path(fs.curPath), path))
+	if len(path) == 0 {
+		return errors.New("empty path")
+	}
+
+	if path[0] == '~' {
+		path = "\\" + path
+	}
+
+	dp := ""
+	cp := ""
+	if path[0] == '\\' || path[0] == '/' {
+		dp = fs.path(path)
+		cp = filepath.Clean(path)
+	} else {
+		dp = filepath.Join(fs.path(fs.curPath), path)
+		cp = filepath.Join(fs.curPath, path)
+	}
+
+	ap, err := filepath.Abs(dp)
 	if err != nil {
 		return err
 	}
@@ -128,7 +155,7 @@ func (fs *fileSystem) ChangeDirectory(path string) error {
 	} else if err != nil {
 		return err
 	}
-	fs.curPath = filepath.Join(fs.curPath, path)
+	fs.curPath = cp
 	return nil
 }
 

@@ -110,6 +110,14 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 		whoami.Run(sh.sf.Username, sh.o.WriteString)
 	case "echo":
 		echo.Run(pcmnd, sh.o.WriteString, sh.fs)
+	case "mkdir":
+		if len(pcmnd) != 2 {
+			sh.o.WriteString("incorrect mkdir command")
+			break
+		}
+		if err := sh.fs.MakeDirectory(pcmnd[1]); err != nil {
+			sh.o.WriteString(err.Error())
+		}
 	case "cd":
 		if len(pcmnd) != 2 {
 			sh.o.WriteString("incorrect cd command")
