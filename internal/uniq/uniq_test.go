@@ -38,8 +38,7 @@ Why?..`),
 		`Hello World!
 Hello World!!!
 Hello World!
-Why?..
-`
+Why?..`
 
 	out := ""
 	pcmnd := []string{"uniq", tmpFile.Name()}
@@ -78,8 +77,7 @@ Why?..`),
 		`3 Hello World!
 1 Hello World!!!
 2 Hello World!
-1 Why?..
-`
+1 Why?..`
 
 	out := ""
 	pcmnd := []string{"uniq", "-c", tmpFile.Name()}

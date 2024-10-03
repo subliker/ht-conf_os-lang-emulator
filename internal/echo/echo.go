@@ -2,6 +2,7 @@ package echo
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/subliker/ht-conf_os-lang-emulator/internal/fs"
 )
@@ -14,6 +15,12 @@ var (
 func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
 	if len(pcmnd) <= 1 {
 		return ErrNotEnoughArgs
+	}
+	offset := 0
+
+	e := len(pcmnd) > 2 && pcmnd[1] == "-e"
+	if e {
+		offset++
 	}
 
 	outf := ""
@@ -37,13 +44,23 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
 	str := ""
 
 	for i, s := range pcmnd {
-		if i == 0 {
+		if i <= offset {
 			continue
 		}
-		if i != 1 {
+		if i != offset+1 {
 			str += " "
 		}
 		str += s
+	}
+
+	if len(str) > 1 && str[0] == '"' && str[len(str)-1] == '"' {
+		str = strings.Trim(str, "\"")
+	} else if len(str) > 1 && str[0] == '\'' && str[len(str)-1] == '\'' {
+		str = strings.Trim(str, "'")
+	}
+
+	if e {
+		str = formattedString(str)
 	}
 
 	if outf == "" {
@@ -56,4 +73,18 @@ func Run(pcmnd []string, write func(string), fs fs.FileSystem) error {
 		return ErrWriteFile
 	}
 	return nil
+}
+
+func formattedString(old string) string {
+	formattingCommands := map[string]string{
+		"\\n": "\n",
+		"\\t": "\t",
+		"\\b": " ",
+		"\\r": "\r",
+		"\\f": "\f",
+	}
+	for k, v := range formattingCommands {
+		old = strings.ReplaceAll(old, k, v)
+	}
+	return old
 }

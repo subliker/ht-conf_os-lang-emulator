@@ -80,6 +80,7 @@ func RunShell(ctx context.Context, c *cli.Command, sf ShellFlags) error {
 		}
 
 		if err := sh.RunStringCmnd(cmnd); err != nil {
+			sh.o.WriteString("Error parsing command: " + err.Error())
 			continue
 		}
 
@@ -109,6 +110,14 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 		whoami.Run(sh.sf.Username, sh.o.WriteString)
 	case "echo":
 		echo.Run(pcmnd, sh.o.WriteString, sh.fs)
+	case "mkdir":
+		if len(pcmnd) != 2 {
+			sh.o.WriteString("incorrect mkdir command")
+			break
+		}
+		if err := sh.fs.MakeDirectory(pcmnd[1]); err != nil {
+			sh.o.WriteString(err.Error())
+		}
 	case "cd":
 		if len(pcmnd) != 2 {
 			sh.o.WriteString("incorrect cd command")
@@ -118,7 +127,7 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 			sh.o.WriteString(err.Error())
 		}
 	case "ls":
-		sh.fs.List(sh.o.WriteString)
+		sh.fs.List(sh.o.WriteString, len(pcmnd) > 1 && pcmnd[1] == "-l")
 	case "uniq":
 		uniq.Run(pcmnd, sh.o.WriteString, sh.fs)
 	default:

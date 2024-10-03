@@ -5,6 +5,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/artdarek/go-unzip"
 )
@@ -15,8 +17,9 @@ type (
 		CurPath() string
 		WriteFile(name string, rw bool, data string) error
 		OpenFile(name string) (*os.File, error)
+		MakeDirectory(name string) error
 		ChangeDirectory(name string) error
-		List(write func(string)) error
+		List(write func(string), more bool) error
 		WriteZip() error
 		Clear()
 	}
@@ -108,12 +111,38 @@ func (fs *fileSystem) OpenFile(name string) (*os.File, error) {
 	return f, nil
 }
 
+func (fs *fileSystem) MakeDirectory(name string) error {
+	if !fs.init {
+		return ErrFSNotInit
+	}
+
+	return os.Mkdir(filepath.Join(fs.path(fs.curPath), name), os.ModePerm)
+}
+
 func (fs *fileSystem) ChangeDirectory(path string) error {
 	if !fs.init {
 		return ErrFSNotInit
 	}
 
-	ap, err := filepath.Abs(filepath.Join(fs.path(fs.curPath), path))
+	if len(path) == 0 {
+		return errors.New("empty path")
+	}
+
+	if path[0] == '~' {
+		path = "\\" + path
+	}
+
+	dp := ""
+	cp := ""
+	if path[0] == '\\' || path[0] == '/' {
+		dp = fs.path(path)
+		cp = filepath.Clean(path)
+	} else {
+		dp = filepath.Join(fs.path(fs.curPath), path)
+		cp = filepath.Join(fs.curPath, path)
+	}
+
+	ap, err := filepath.Abs(dp)
 	if err != nil {
 		return err
 	}
@@ -126,21 +155,42 @@ func (fs *fileSystem) ChangeDirectory(path string) error {
 	} else if err != nil {
 		return err
 	}
-	fs.curPath = filepath.Join(fs.curPath, path)
+	fs.curPath = cp
 	return nil
 }
 
-func (fs *fileSystem) List(write func(string)) error {
+func (fs *fileSystem) List(write func(string), more bool) error {
+	if !fs.init {
+		return ErrFSNotInit
+	}
+
 	files, err := os.ReadDir(fs.path(fs.curPath))
 	if err != nil {
 		return err
 	}
 
 	for _, f := range files {
+		s := ""
+		n := f.Name()
 		if f.IsDir() {
-			continue
+			n = "\033[34m" + n + "\033[0m"
 		}
-		write(f.Name() + "\n")
+		if more {
+			i, err := os.Stat(filepath.Join(fs.path(fs.curPath), f.Name()))
+			if err != nil {
+				s = n
+			} else {
+				if f.IsDir() {
+					s += "d "
+				} else {
+					s += "- "
+				}
+				s += strconv.FormatInt(i.Size(), 10) + " " + i.ModTime().Format(time.RFC822) + " " + n + "\n"
+			}
+		} else {
+			s += n + "\n"
+		}
+		write(s)
 	}
 	return nil
 }
