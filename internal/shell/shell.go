@@ -99,7 +99,7 @@ func (sh *sh) RunStringCmnd(cmnd string) error {
 		return err
 	}
 
-	if len(cmnd) == 0 {
+	if len(cmnd) == 0 || len(pcmnd) == 0 {
 		return nil
 	}
 
