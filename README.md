@@ -7,7 +7,6 @@ This project is a home task for configuration management.
 - [Task](#task)
 - [Requirements](#requirements)
 - [Getting Started](#getting-started)
-- [Running the Emulator](#running-the-emulator)
 - [Running Tests](#running-tests)
 - [Help](#help)
 - [Usage Examples](#usage-examples)
@@ -81,7 +80,7 @@ go test -v ./...
 For flags information, run:
 
 ```
-./emu-x64.exe --help\
+./emu-x64.exe --help
 ```
 
 ## Usage Examples
